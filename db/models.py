@@ -17,7 +17,7 @@ class User(Base):
     group_id = Column(Integer, ForeignKey('groups.id'), nullable=True)
 
     role = relationship("Role", back_populates="users")
-    group = relationship("Group", back_populates="users")
+    group = relationship("Group", back_populates="users", foreign_keys=[group_id])  # Указываем foreign_keys для этого отношения
 
     def __repr__(self):
         return f"<User(id={self.id}, username={self.username}, full_name={self.full_name})>"
@@ -27,13 +27,16 @@ class Group(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(255), nullable=True)
-    admin_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    admin_id = Column(Integer, ForeignKey('users.telegram_id'), nullable=False)  # Ссылаемся на telegram_id
 
-    admin = relationship("User", back_populates="admin_group")
-    users = relationship("User", back_populates="group")
+    admin = relationship("User", back_populates="admin_group", foreign_keys=[admin_id])  # Указываем foreign_keys для этого отношения
+    users = relationship("User", back_populates="group", foreign_keys=[User.group_id])  # Указываем, что связь с группой идет через group_id в таблице users
 
     def __repr__(self):
         return f"<Group(id={self.id}, name={self.name})>"
+
+
+
 
 class Role(Base):
     __tablename__ = 'roles'
@@ -64,6 +67,6 @@ class Checkin(Base):
         return f"<Checkin(id={self.id}, user_id={self.user_id}, group_id={self.group_id}, check={self.check})>"
 
 # Обратные связи
-User.admin_group = relationship("Group", back_populates="admin")
+User.admin_group = relationship("Group", back_populates="admin", foreign_keys=[Group.admin_id])
 Group.checkins = relationship("Checkin", back_populates="group")
 User.checkins = relationship("Checkin", back_populates="user")

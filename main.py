@@ -5,8 +5,12 @@ from aiogram.filters import Command
 from dotenv import load_dotenv
 from aiogram.types import ContentType
 from aiogram import F
+from aiogram.fsm.storage.memory import MemoryStorage
 
 import os
+
+from bot.register import router
+from bot.admin import admin
 
 load_dotenv()
 
@@ -14,12 +18,25 @@ TOKEN = os.getenv("TOKENTELEGRAMBOT")
 
 # Создаём объект бота и диспетчера
 bot = Bot(token=TOKEN)
-dp = Dispatcher()
+
+dp = Dispatcher(storage=MemoryStorage())
+
+dp.include_router(router)
+dp.include_router(admin)
+
+print(f"Подключённые роутеры: {dp.sub_routers}")
 
 # Обработчик команды /start
 @dp.message(Command("start"))
 async def start_handler(message: Message):
     await message.answer("Привет! Я Telegram-бот на aiogram 🚀")
+
+
+# # Обработчик команды /reg_user
+# @dp.message(Command("reg_user"))
+# async def register_new_user(message: Message):
+#     await message.answer("вы зарегистрировали нового юзера")
+
 
 @dp.message(Command("get_video"))
 async def send_video(message: types.Message):
@@ -51,9 +68,11 @@ async def handle_video_note(message: types.Message):
 
 
 # Обработчик текстовых сообщений
-@dp.message(F.content_type == ContentType.TEXT)
-async def handle_text(message: types.Message):
-    await message.answer(f"Ты сказал: {message.text}")
+# @dp.message(F.content_type == ContentType.TEXT)
+# async def handle_text(message: types.Message):
+#     user_id = message.from_user.id  # Получаем ID пользователя
+#     await message.answer(f"Ты сказал: {message.text}\nТвой ID: {user_id}")
+
 
 # Функция запуска бота
 async def main():
